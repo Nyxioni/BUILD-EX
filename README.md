@@ -50,19 +50,11 @@
 
 ### Three Loading Modes
 
-```
-┌─────────────┬──────────────────────────────────────────────────────────────┐
-│  🟢 Legit   │ Uses only existing points and inventory. Mathematically     │
-│             │ scales the build to the current level (proportional         │
-│             │ distribution if points are insufficient).                   │
-├─────────────┼──────────────────────────────────────────────────────────────┤
-│  🟡 Sandbox │ Generates missing points and items. Permanent changes       │
-│             │ to the save file.                                           │
-├─────────────┼──────────────────────────────────────────────────────────────┤
-│  🔵 Fitting │ Spawns items temporarily. AutoSaves are frozen. Generated   │
-│    Room     │ items are destroyed on the next build switch.               │
-└─────────────┴──────────────────────────────────────────────────────────────┘
-```
+| Mode | Description |
+|---|---|
+| 🟢 **Legit** | Uses only existing points and inventory. Mathematically scales the build to the current level (proportional distribution if points are insufficient). |
+| 🟡 **Sandbox** | Generates missing points and items. Permanent changes to the save file. |
+| 🔵 **Fitting Room** | Spawns items temporarily. AutoSaves are frozen. Generated items are destroyed on the next build switch. |
 
 ### Cheat Panel
 Built-in resource management with fine-grained control:

@@ -240,7 +240,7 @@ Builds-EX operates through CET's Lua API and does not modify game archives. It i
 <details>
 <summary><b>Can the UI language be changed?</b></summary>
 
-Full localization support (English/Russian) is being implemented. Contributions are welcome!
+Full bilingual support (English and Russian) is built right in. You can toggle between languages at any time using the button in the top right corner of the mod.
 
 </details>
 

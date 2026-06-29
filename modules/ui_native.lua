@@ -1,4 +1,5 @@
 local UI = {}
+local Locales = require("modules/locales")
 local CBM = nil
 
 function UI.Init(mainModule)
@@ -59,7 +60,7 @@ function UI.InjectOpenButton(controller)
     local root = controller:GetRootCompoundWidget()
     if not root then return end
     
-    local button = UI.CreateButton("[ МЕНЕДЖЕР БИЛДОВ ]", 350, 60, function()
+    local button = UI.CreateButton(Locales.Get("NATIVE_BTN_OPEN"), 350, 60, function()
         UI.OpenNativeMenu(controller)
     end, controller)
     
@@ -101,7 +102,7 @@ function UI.OpenNativeMenu(parentController)
     local col1 = inkVerticalPanel.new()
     col1:SetMargin(inkMargin.new({ left = 0, top = 0, right = 50, bottom = 0 }))
     local title1 = inkText.new()
-    title1:SetText("БАНК ДАННЫХ")
+    title1:SetText(Locales.Get("NATIVE_TITLE"))
     title1:SetFontFamily("base\\gameplay\\gui\\fonts\\rajdhani\\rajdhani.inkfontfamily")
     title1:SetFontStyle(CName.new("Regular"))
     title1:SetFontSize(50)
@@ -109,7 +110,7 @@ function UI.OpenNativeMenu(parentController)
     title1:Reparent(col1)
     
     -- Кнопка закрытия
-    local closeBtn = UI.CreateButton("ЗАКРЫТЬ", 200, 50, function()
+    local closeBtn = UI.CreateButton(Locales.Get("NATIVE_BTN_CLOSE"), 200, 50, function()
         menuRoot:SetVisible(false)
     end, parentController)
     closeBtn:SetMargin(inkMargin.new({ left = 0, top = 50, right = 0, bottom = 0 }))

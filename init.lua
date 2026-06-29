@@ -1,8 +1,9 @@
+local Locales = require("modules/locales")
 local CyberBuildManager = {
     showWindow = false,
     buildNameInput = "MyBuild",
     historyNameInput = "",
-    statusMessage = "Ожидание",
+    statusMessage = Locales.Get("STATUS_WAITING"),
     buildsList = {},
     
     -- Поля для ввода очков
@@ -150,7 +151,7 @@ function CyberBuildManager:StartBuildLoad(buildName, data)
     self.loadState.buildName = buildName
     self.loadState.phase = 1
     self.loadState.frames = 0
-    self.statusMessage = "Загрузка: Продажа перков..."
+    self.statusMessage = Locales.Get("STATUS_LOAD_PHASE1")
     print("[CyberBuildManager] Начинаем фазированную загрузку билда: " .. buildName)
 end
 
@@ -181,16 +182,16 @@ function CyberBuildManager:FormatBuildDetails(data)
     end
 
     if data.money then
-        table.insert(details.general, "Эдди (Деньги): " .. tostring(data.money))
+        table.insert(details.general, Locales.Get("LOC_MONEY") .. tostring(data.money))
     end
     if data.level then
-        table.insert(details.general, "Уровень: " .. tostring(data.level))
+        table.insert(details.general, Locales.Get("LOC_LVL") .. tostring(data.level))
     end
     if data.streetCred then
-        table.insert(details.general, "Репутация: " .. tostring(data.streetCred))
+        table.insert(details.general, Locales.Get("LOC_SC") .. tostring(data.streetCred))
     end
     if data.vehicles and #data.vehicles > 0 then
-        table.insert(details.general, "Машин в гараже: " .. tostring(#data.vehicles))
+        table.insert(details.general, Locales.Get("LOC_GARAGE") .. tostring(#data.vehicles))
         for _, v in ipairs(data.vehicles) do
             local dispName = v.name
             if dispName == nil or dispName == "" then dispName = v.id end
@@ -199,11 +200,11 @@ function CyberBuildManager:FormatBuildDetails(data)
     end
 
     if data.attributes then
-        table.insert(details.attributes, "Сила: " .. tostring(data.attributes.Body or 0))
-        table.insert(details.attributes, "Реакция: " .. tostring(data.attributes.Reflexes or 0))
-        table.insert(details.attributes, "Техника: " .. tostring(data.attributes.TechnicalAbility or 0))
-        table.insert(details.attributes, "Интеллект: " .. tostring(data.attributes.Intelligence or 0))
-        table.insert(details.attributes, "Хладнокровие: " .. tostring(data.attributes.Cool or 0))
+        table.insert(details.attributes, Locales.Get("LOC_BODY") .. tostring(data.attributes.Body or 0))
+        table.insert(details.attributes, Locales.Get("LOC_REFL") .. tostring(data.attributes.Reflexes or 0))
+        table.insert(details.attributes, Locales.Get("LOC_TECH") .. tostring(data.attributes.TechnicalAbility or 0))
+        table.insert(details.attributes, Locales.Get("LOC_INT") .. tostring(data.attributes.Intelligence or 0))
+        table.insert(details.attributes, Locales.Get("LOC_COOL") .. tostring(data.attributes.Cool or 0))
     end
     
     if data.skills then
@@ -214,18 +215,18 @@ function CyberBuildManager:FormatBuildDetails(data)
     
     if data.perks and data.perks.perks then
         local counts = {}
-        local catMap = { Intelligence="Интеллект", Reflexes="Реакция", Body="Сила", Tech="Техника", Cool="Хладнокровие" }
+        local catMap = { Intelligence=Locales.Get("TREE_INT"), Reflexes=Locales.Get("TREE_REFL"), Body=Locales.Get("TREE_BODY"), Tech=Locales.Get("TREE_TECH"), Cool=Locales.Get("TREE_COOL") }
         for perkStr, level in pairs(data.perks.perks) do
             local cat = string.match(perkStr, ": ([A-Za-z]+)_")
             if cat then
                 local catName = catMap[cat] or cat
                 counts[catName] = (counts[catName] or 0) + level
             else
-                counts["Другое"] = (counts["Другое"] or 0) + level
+                local tr_oth = Locales.Get("TREE_OTHER"); counts[tr_oth] = (counts[tr_oth] or 0) + level
             end
         end
         for k, v in pairs(counts) do
-            table.insert(details.perks, "Ветвь " .. k .. ": " .. tostring(v) .. " очков")
+            table.insert(details.perks, Locales.Get("LOC_BRANCH", k, v))
         end
     end
     
@@ -242,7 +243,7 @@ function CyberBuildManager:FormatBuildDetails(data)
         if data.equipment.Weapon then
             for i=0,2 do
                 if data.equipment.Weapon[tostring(i)] and data.equipment.Weapon[tostring(i)].baseTdbid then
-                    table.insert(details.weapons, "Слот " .. tostring(i+1) .. ": " .. GetLocName(data.equipment.Weapon[tostring(i)].baseTdbid))
+                    table.insert(details.weapons, Locales.Get("LOC_SLOT", i+1, GetLocName(data.equipment.Weapon[tostring(i)].baseTdbid)))
                 end
             end
         end
@@ -319,13 +320,13 @@ function CyberBuildManager:SaveCurrentState(buildName)
         if data.attributes then
             local saveOk, err = Storage.SaveBuild(buildName, data)
             if saveOk then
-                self.statusMessage = "Билд '" .. buildName .. "' сохранен!"
+                self.statusMessage = Locales.Get("STATUS_SAVE_DONE", buildName)
                 self:RefreshBuilds()
             else
-                self.statusMessage = "Ошибка: " .. tostring(err)
+                self.statusMessage = Locales.Get("STATUS_SAVE_ERR", tostring(err))
             end
         else
-            self.statusMessage = "Ошибка: Игрок не найден"
+            self.statusMessage = Locales.Get("STATUS_PLAYER_ERR")
         end
     else
         self.statusMessage = "Сбой при чтении! А: " .. tostring(sA) .. " П: " .. tostring(sP) .. " Н: " .. tostring(sS) .. " Э: " .. tostring(sE)
@@ -370,50 +371,59 @@ function CyberBuildManager:Draw()
         self:ApplyTheme()
         
         ImGui.SetNextWindowSize(900, 750, ImGuiCond.FirstUseEver)
-        if ImGui.Begin("CyberBuildManager v1.0 (Neon Edition)", ImGuiWindowFlags.NoCollapse) then
+
+        if ImGui.Begin(Locales.Get("WINDOW_TITLE"), ImGuiWindowFlags.NoCollapse) then
+            local current_lang = Locales.current
+            ImGui.SetCursorPosX(800)
+            if current_lang == "en" then
+                if ImGui.Button("RU", 40, 20) then Locales.SaveConfig("ru") end
+            else
+                if ImGui.Button("EN", 40, 20) then Locales.SaveConfig("en") end
+            end
+
             
             -- HEADER: STATUS & PROGRESS
             ImGui.BeginChild("HeaderStatus", 0, 40, true)
             if self.loadState.active then
-                ImGui.TextColored(0.0, 1.0, 1.0, 1.0, "Статус: " .. self.statusMessage)
+                ImGui.TextColored(0.0, 1.0, 1.0, 1.0, Locales.Get("STATUS") .. self.statusMessage)
                 ImGui.SameLine(300)
                 local progress = self.loadState.phase / 4.0
                 ImGui.ProgressBar(progress, 350, 15, "")
             else
-                ImGui.TextColored(0.98, 0.84, 0.12, 1.0, "Статус: " .. self.statusMessage)
+                ImGui.TextColored(0.98, 0.84, 0.12, 1.0, Locales.Get("STATUS") .. self.statusMessage)
             end
             ImGui.EndChild()
             
             ImGui.Spacing()
             
             -- COLLAPSING HEADER: LOAD SETTINGS
-            if ImGui.CollapsingHeader(" Тонкая настройка загрузки") then
+            if ImGui.CollapsingHeader(Locales.Get("HEADER_OPTIONS")) then
                 ImGui.Indent(10)
-                ImGui.TextColored(0.0, 0.8, 0.9, 1.0, "Опции:")
-                self.loadOptions.attributes = ImGui.Checkbox("Характеристики", self.loadOptions.attributes)
+                ImGui.TextColored(0.0, 0.8, 0.9, 1.0, Locales.Get("LBL_OPTIONS"))
+                self.loadOptions.attributes = ImGui.Checkbox(Locales.Get("OPT_ATTR"), self.loadOptions.attributes)
                 ImGui.SameLine()
-                self.loadOptions.perks = ImGui.Checkbox("Перки", self.loadOptions.perks)
+                self.loadOptions.perks = ImGui.Checkbox(Locales.Get("OPT_PERK"), self.loadOptions.perks)
                 ImGui.SameLine()
-                self.loadOptions.skills = ImGui.Checkbox("Навыки", self.loadOptions.skills)
+                self.loadOptions.skills = ImGui.Checkbox(Locales.Get("OPT_SKILL"), self.loadOptions.skills)
                 ImGui.SameLine()
-                self.loadOptions.equipment = ImGui.Checkbox("Экипировка", self.loadOptions.equipment)
+                self.loadOptions.equipment = ImGui.Checkbox(Locales.Get("OPT_EQUIP"), self.loadOptions.equipment)
                 ImGui.SameLine()
-                self.loadOptions.money = ImGui.Checkbox("Деньги (НГ+)", self.loadOptions.money)
+                self.loadOptions.money = ImGui.Checkbox(Locales.Get("OPT_MONEY"), self.loadOptions.money)
                 ImGui.SameLine()
-                self.loadOptions.level = ImGui.Checkbox("Уровень (НГ+)", self.loadOptions.level)
+                self.loadOptions.level = ImGui.Checkbox(Locales.Get("OPT_LVL"), self.loadOptions.level)
                 ImGui.SameLine()
-                self.loadOptions.vehicles = ImGui.Checkbox("Гараж (Машины)", self.loadOptions.vehicles)
+                self.loadOptions.vehicles = ImGui.Checkbox(Locales.Get("OPT_VEHICLES"), self.loadOptions.vehicles)
                 
                 ImGui.Spacing()
-                ImGui.TextColored(0.0, 0.8, 0.9, 1.0, "Режим:")
-                if ImGui.RadioButton("Честный", self.itemLoadMode == 0) then self.itemLoadMode = 0 end
-                if ImGui.IsItemHovered() then ImGui.SetTooltip("Использует только ваши текущие очки и предметы в инвентаре.\nМатематически балансирует билд под ваш уровень.") end
+                ImGui.TextColored(0.0, 0.8, 0.9, 1.0, Locales.Get("LBL_MODE"))
+                if ImGui.RadioButton(Locales.Get("MODE_LEGIT"), self.itemLoadMode == 0) then self.itemLoadMode = 0 end
+                if ImGui.IsItemHovered() then ImGui.SetTooltip(Locales.Get("MODE_LEGIT_TT")) end
                 ImGui.SameLine()
-                if ImGui.RadioButton("Песочница", self.itemLoadMode == 1) then if self.itemLoadMode ~= 1 then self.pendingModeSwitch = 1 end end
-                if ImGui.IsItemHovered() then ImGui.SetTooltip("Создает недостающие очки и предметы из воздуха.\nВНИМАНИЕ: Навсегда меняет ваше сохранение!") end
+                if ImGui.RadioButton(Locales.Get("MODE_SANDBOX"), self.itemLoadMode == 1) then if self.itemLoadMode ~= 1 then self.pendingModeSwitch = 1 end end
+                if ImGui.IsItemHovered() then ImGui.SetTooltip(Locales.Get("MODE_SANDBOX_TT")) end
                 ImGui.SameLine()
-                if ImGui.RadioButton("Примерочная", self.itemLoadMode == 2) then if self.itemLoadMode ~= 2 then self.pendingModeSwitch = 2 end end
-                if ImGui.IsItemHovered() then ImGui.SetTooltip("Выдает предметы на время. При смене билда созданные вещи уничтожаются.\nАвтосохранения блокируются.") end
+                if ImGui.RadioButton(Locales.Get("MODE_RENTAL"), self.itemLoadMode == 2) then if self.itemLoadMode ~= 2 then self.pendingModeSwitch = 2 end end
+                if ImGui.IsItemHovered() then ImGui.SetTooltip(Locales.Get("MODE_RENTAL_TT")) end
                 
                 ImGui.Unindent(10)
                 ImGui.Spacing()
@@ -422,7 +432,7 @@ function CyberBuildManager:Draw()
             ImGui.Separator()
             
             if ImGui.BeginTabBar("BuildTabs") then
-                if ImGui.BeginTabItem("Мои Билды") then
+                if ImGui.BeginTabItem(Locales.Get("TAB_MY_BUILDS")) then
                     ImGui.Spacing()
                     
                     ImGui.BeginChild("BuildListPane", 250, 450, true)
@@ -441,19 +451,19 @@ function CyberBuildManager:Draw()
                             end
                         end
                     end
-                    if not hasBuilds then ImGui.TextDisabled("Нет сохраненных билдов.") end
+                    if not hasBuilds then ImGui.TextDisabled(Locales.Get("LBL_NO_BUILDS")) end
                     ImGui.EndChild()
                     
                     ImGui.SameLine()
                     
                     ImGui.BeginChild("BuildDetailsPane", 0, 450, true)
                     if self.selectedBuild and self.selectedBuild ~= "" then
-                        ImGui.TextColored(0.0, 0.8, 0.9, 1.0, "Билд:")
+                        ImGui.TextColored(0.0, 0.8, 0.9, 1.0, Locales.Get("LBL_BUILD_INFO"))
                         ImGui.SameLine()
                         ImGui.Text(self.selectedBuild)
                         
                         ImGui.SameLine(330)
-                        if ImGui.Button("ЗАГРУЗИТЬ БИЛД", 130, 25) then
+                        if ImGui.Button(Locales.Get("BTN_LOAD"), 130, 25) then
                             local data = Storage.LoadBuild(self.selectedBuild)
                             if data then self:StartBuildLoad(self.selectedBuild, data) end
                         end
@@ -464,68 +474,68 @@ function CyberBuildManager:Draw()
                         if self.selectedBuildData and self.selectedBuildDetails then
                             local selectedDetails = self.selectedBuildDetails
                             if #selectedDetails.general > 0 then
-                                if ImGui.CollapsingHeader("Общее") then
+                                if ImGui.CollapsingHeader(Locales.Get("CAT_GENERAL")) then
                                     for _, v in ipairs(selectedDetails.general) do ImGui.TextColored(0.98, 0.84, 0.12, 1.0, "- " .. v) end
                                 end
                             end
                             if #selectedDetails.vehicles > 0 then
-                                if ImGui.CollapsingHeader(" Гараж") then
+                                if ImGui.CollapsingHeader(Locales.Get("CAT_GARAGE")) then
                                     ImGui.Indent(10)
                                     for _, v in ipairs(selectedDetails.vehicles) do ImGui.Text(v) end
                                     ImGui.Unindent(10)
                                 end
                             end
-                            if ImGui.CollapsingHeader("Характеристики (" .. tostring(self.selectedBuildData.attributes and self.selectedBuildData.attributes.totalPool or 0) .. " очков)") then
+                            if ImGui.CollapsingHeader(Locales.Get("CAT_ATTR", self.selectedBuildData.attributes and self.selectedBuildData.attributes.totalPool or 0)) then
                                 for _, v in ipairs(self.selectedBuildDetails.attributes) do ImGui.Text("- " .. v) end
                             end
-                            if ImGui.CollapsingHeader("Перки") then
-                                if #self.selectedBuildDetails.perks == 0 then ImGui.Text("Нет перков") else
+                            if ImGui.CollapsingHeader(Locales.Get("OPT_PERK")) then
+                                if #self.selectedBuildDetails.perks == 0 then ImGui.Text(Locales.Get("NO_PERKS")) else
                                     for _, v in ipairs(self.selectedBuildDetails.perks) do ImGui.Text("- " .. v) end
                                 end
                             end
-                            if ImGui.CollapsingHeader("Навыки") then
-                                if #self.selectedBuildDetails.skills == 0 then ImGui.Text("Нет данных") else
+                            if ImGui.CollapsingHeader(Locales.Get("OPT_SKILL")) then
+                                if #self.selectedBuildDetails.skills == 0 then ImGui.Text(Locales.Get("NO_SKILLS")) else
                                     for _, v in ipairs(self.selectedBuildDetails.skills) do ImGui.Text("- " .. v) end
                                 end
                             end
                             if ImGui.CollapsingHeader("Оружие") then
-                                if #self.selectedBuildDetails.weapons == 0 then ImGui.Text("Без оружия") else
+                                if #self.selectedBuildDetails.weapons == 0 then ImGui.Text(Locales.Get("NO_WEAPONS")) else
                                     for _, v in ipairs(self.selectedBuildDetails.weapons) do ImGui.Text("- " .. v) end
                                 end
                             end
                             if ImGui.CollapsingHeader("Одежда") then
-                                if #self.selectedBuildDetails.equipment == 0 then ImGui.Text("Голышом") else
+                                if #self.selectedBuildDetails.equipment == 0 then ImGui.Text(Locales.Get("NO_CLOTHES")) else
                                     for _, v in ipairs(self.selectedBuildDetails.equipment) do ImGui.Text("- " .. v) end
                                 end
                             end
                             if ImGui.CollapsingHeader("Импланты") then
-                                if #self.selectedBuildDetails.cyberware == 0 then ImGui.Text("Чистая органика") else
+                                if #self.selectedBuildDetails.cyberware == 0 then ImGui.Text(Locales.Get("NO_CW")) else
                                     for _, v in ipairs(self.selectedBuildDetails.cyberware) do ImGui.Text("- " .. v) end
                                 end
                             end
                         else
-                            ImGui.TextDisabled("Данные билда повреждены или недоступны.")
+                            ImGui.TextDisabled(Locales.Get("CORRUPTED"))
                         end
                         ImGui.EndChild()
                         
                         ImGui.Spacing()
-                        if ImGui.Button("Удалить билд", 150, 20) then
+                        if ImGui.Button(Locales.Get("BTN_DEL"), 150, 20) then
                             self.pendingDeleteBuild = self.selectedBuild
                         end
                     else
-                        ImGui.TextDisabled("Выберите билд из списка слева...")
+                        ImGui.TextDisabled(Locales.Get("LBL_SELECT_LEFT"))
                     end
                     ImGui.EndChild()
                     
                     ImGui.Separator()
-                    self.buildNameInput = ImGui.InputText("Имя билда", self.buildNameInput, 100)
+                    self.buildNameInput = ImGui.InputText(Locales.Get("INPUT_BUILD"), self.buildNameInput, 100)
                     ImGui.SameLine()
-                    if ImGui.Button("Сохранить текущий билд") then self:SaveCurrentState(self.buildNameInput) end
+                    if ImGui.Button(Locales.Get("BTN_SAVE_BUILD")) then self:SaveCurrentState(self.buildNameInput) end
                     
                     ImGui.EndTabItem()
                 end
                 
-                if ImGui.BeginTabItem("История") then
+                if ImGui.BeginTabItem(Locales.Get("TAB_HISTORY")) then
                     ImGui.BeginChild("HistoryPane", 0, 450, true)
                     local hasHistory = false
                     for i, buildName in ipairs(self.buildsList) do
@@ -533,27 +543,27 @@ function CyberBuildManager:Draw()
                             hasHistory = true
                             local dn = buildName
                             if string.match(buildName, "^_AutoSave_") then
-                                dn = "[Автосейв] " .. string.sub(buildName, 11)
+                                dn = Locales.Get("TXT_AUTOSAVE") .. string.sub(buildName, 11)
                                 ImGui.TextColored(0.0, 0.8, 0.9, 1.0, dn)
                             else
-                                dn = "[Вручную] " .. string.sub(buildName, 10)
+                                dn = Locales.Get("TXT_MANUAL") .. string.sub(buildName, 10)
                                 ImGui.Text(dn)
                             end
                             ImGui.SameLine(300)
-                            if ImGui.Button("Загрузить##h_"..tostring(i)) then
+                            if ImGui.Button(Locales.Get("BTN_HISTORY_LOAD") .. "##h_"..tostring(i)) then
                                 local data = Storage.LoadBuild(buildName)
                                 if data then self:StartBuildLoad(buildName, data) end
                             end
                             ImGui.SameLine()
-                            if ImGui.Button("Удалить##hdel_"..tostring(i)) then self.pendingDeleteBuild = buildName end
+                            if ImGui.Button(Locales.Get("BTN_HISTORY_DEL") .. "##hdel_"..tostring(i)) then self.pendingDeleteBuild = buildName end
                         end
                     end
-                    if not hasHistory then ImGui.Text("История пуста.") end
+                    if not hasHistory then ImGui.Text(Locales.Get("LBL_HISTORY_EMPTY")) end
                     ImGui.EndChild()
                     
-                    self.historyNameInput = ImGui.InputText("Заметка", self.historyNameInput, 100)
+                    self.historyNameInput = ImGui.InputText(Locales.Get("INPUT_NOTE"), self.historyNameInput, 100)
                     ImGui.SameLine()
-                    if ImGui.Button("Быстрое сохранение (в Историю)") then
+                    if ImGui.Button(Locales.Get("BTN_QUICKSAVE")) then
                         local safeName = self.historyNameInput
                         if safeName == "" then safeName = "Manual_" .. tostring(os.time()) end
                         self:SaveCurrentState("_History_" .. safeName)
@@ -562,17 +572,17 @@ function CyberBuildManager:Draw()
                     ImGui.EndTabItem()
                 end
                 
-                if ImGui.BeginTabItem("Чит-Панель") then
+                if ImGui.BeginTabItem(Locales.Get("TAB_CHEAT")) then
 
                     ImGui.Spacing()
-                    if ImGui.Button("Полный сброс (Атрибуты и Перки)", -1, 30) then
+                    if ImGui.Button(Locales.Get("BTN_RESET_ALL"), -1, 30) then
                         if not self.loadState.active then
                             local p = Game.GetPlayer()
                             if p then
                                 local devData = Game.GetScriptableSystemsContainer():Get(CName.new('PlayerDevelopmentSystem')):GetDevelopmentData(p)
                                 pcall(function() devData.hasResetAttributes = false; devData:ResetAttributes() end)
                                 pcall(Perks.SellAll)
-                                self.statusMessage = "Атрибуты и перки сброшены! Очки возвращены."
+                                self.statusMessage = Locales.Get("STATUS_RESET_DONE")
                             end
                         end
                     end
@@ -580,10 +590,10 @@ function CyberBuildManager:Draw()
                     ImGui.Spacing()
                     ImGui.Columns(2, "CheatColumns", true)
                     
-                    ImGui.TextColored(0.98, 0.84, 0.12, 1.0, "Очки прокачки")
-                    local newAttr, attrChanged = ImGui.InputInt("Атрибуты (+/-)", self.addAttrPoints, 1, 5)
+                    ImGui.TextColored(0.98, 0.84, 0.12, 1.0, Locales.Get("HDR_CHEAT_PTS"))
+                    local newAttr, attrChanged = ImGui.InputInt(Locales.Get("INP_ATTR"), self.addAttrPoints, 1, 5)
                     if attrChanged then self.addAttrPoints = newAttr end
-                    if ImGui.Button("Применить##attr") then
+                    if ImGui.Button(Locales.Get("BTN_APPLY") .. "##attr") then
                         local p = Game.GetPlayer()
                         if p and self.addAttrPoints ~= 0 then
                             local devData = Game.GetScriptableSystemsContainer():Get(CName.new('PlayerDevelopmentSystem')):GetDevelopmentData(p)
@@ -597,14 +607,14 @@ function CyberBuildManager:Draw()
                                     devData:AddDevelopmentPoints(change, Enum.new("gamedataDevelopmentPointType", "Attribute")) 
                                 end
                             end)
-                            self.statusMessage = "Атрибуты изменены."
+                            self.statusMessage = Locales.Get("STATUS_ATTR_DONE")
                         end
                     end
                     
                     ImGui.Spacing()
-                    local newPerk, perkChanged = ImGui.InputInt("Перки (+/-)", self.addPerkPoints, 1, 5)
+                    local newPerk, perkChanged = ImGui.InputInt(Locales.Get("INP_PERK"), self.addPerkPoints, 1, 5)
                     if perkChanged then self.addPerkPoints = newPerk end
-                    if ImGui.Button("Применить##perk") then
+                    if ImGui.Button(Locales.Get("BTN_APPLY") .. "##perk") then
                         local p = Game.GetPlayer()
                         if p and self.addPerkPoints ~= 0 then
                             local devData = Game.GetScriptableSystemsContainer():Get(CName.new('PlayerDevelopmentSystem')):GetDevelopmentData(p)
@@ -618,16 +628,16 @@ function CyberBuildManager:Draw()
                                     devData:AddDevelopmentPoints(change, Enum.new("gamedataDevelopmentPointType", "Primary")) 
                                 end
                             end)
-                            self.statusMessage = "Перки изменены."
+                            self.statusMessage = Locales.Get("STATUS_PERK_DONE")
                         end
                     end
                     
                     ImGui.NextColumn()
                     
-                    ImGui.TextColored(0.98, 0.84, 0.12, 1.0, "Инвентарь и Уровни")
-                    local newMoney, moneyChanged = ImGui.InputInt("Эдди (+/-)", self.addMoneyAmount, 1000, 10000)
+                    ImGui.TextColored(0.98, 0.84, 0.12, 1.0, Locales.Get("HDR_CHEAT_INV"))
+                    local newMoney, moneyChanged = ImGui.InputInt(Locales.Get("INP_MONEY"), self.addMoneyAmount, 1000, 10000)
                     if moneyChanged then self.addMoneyAmount = newMoney end
-                    if ImGui.Button("Применить##money") then
+                    if ImGui.Button(Locales.Get("BTN_APPLY") .. "##money") then
                         local p = Game.GetPlayer()
                         local ts = Game.GetTransactionSystem()
                         if p and ts and self.addMoneyAmount ~= 0 then
@@ -640,14 +650,14 @@ function CyberBuildManager:Draw()
                                 if amountToRemove > currentMoney then amountToRemove = currentMoney end
                                 ts:RemoveItemByTDBID(p, TweakDBID.new("Items.money"), amountToRemove)
                             end
-                            self.statusMessage = "Эдди изменены."
+                            self.statusMessage = Locales.Get("STATUS_MONEY_DONE")
                         end
                     end
                     
                     ImGui.Spacing()
-                    local newLevelAmt, levelAmtChanged = ImGui.InputInt("Уровень (+/-)", self.addLevelAmount, 1, 5)
+                    local newLevelAmt, levelAmtChanged = ImGui.InputInt(Locales.Get("INP_LVL"), self.addLevelAmount, 1, 5)
                     if levelAmtChanged then self.addLevelAmount = newLevelAmt end
-                    if ImGui.Button("Применить##level") then
+                    if ImGui.Button(Locales.Get("BTN_APPLY") .. "##level") then
                         local p = Game.GetPlayer()
                         if p and self.addLevelAmount ~= 0 then
                             local devData = Game.GetScriptableSystemsContainer():Get(CName.new('PlayerDevelopmentSystem')):GetDevelopmentData(p)
@@ -671,14 +681,14 @@ function CyberBuildManager:Draw()
                                     end
                                 end
                             end)
-                            self.statusMessage = "Уровень изменен."
+                            self.statusMessage = Locales.Get("STATUS_LVL_DONE")
                         end
                     end
                     
                     ImGui.Spacing()
-                    local newSCAmt, scAmtChanged = ImGui.InputInt("Репутация (+/-)", self.addSCAmount, 1, 5)
+                    local newSCAmt, scAmtChanged = ImGui.InputInt(Locales.Get("INP_SC"), self.addSCAmount, 1, 5)
                     if scAmtChanged then self.addSCAmount = newSCAmt end
-                    if ImGui.Button("Применить##sc") then
+                    if ImGui.Button(Locales.Get("BTN_APPLY") .. "##sc") then
                         local p = Game.GetPlayer()
                         if p and self.addSCAmount ~= 0 then
                             local devData = Game.GetScriptableSystemsContainer():Get(CName.new('PlayerDevelopmentSystem')):GetDevelopmentData(p)
@@ -687,7 +697,7 @@ function CyberBuildManager:Draw()
                                 local nlvl = math.max(1, math.min(50, cur + self.addSCAmount))
                                 devData:SetLevel(Enum.new("gamedataProficiencyType", "StreetCred"), nlvl, Enum.new("telemetryLevelGainReason", "Gameplay")) 
                             end)
-                            self.statusMessage = "Репутация изменена."
+                            self.statusMessage = Locales.Get("STATUS_SC_DONE")
                         end
                     end
                     
@@ -699,32 +709,32 @@ function CyberBuildManager:Draw()
             end
 
             ImGui.Separator()
-            if ImGui.Button("ЗАКРЫТЬ", -1, 30) then self.showWindow = false end
+            if ImGui.Button(Locales.Get("BTN_CLOSE"), -1, 30) then self.showWindow = false end
             
             -- Popups
-            if self.pendingModeSwitch ~= -1 then ImGui.OpenPopup("Внимание! Смена режима") end
-            if ImGui.BeginPopupModal("Внимание! Смена режима", true, ImGuiWindowFlags.AlwaysAutoResize) then
-                local modeName = self.pendingModeSwitch == 1 and "Песочница" or "Примерочная"
-                ImGui.Text("Вы собираетесь включить режим '" .. modeName .. "'.")
-                ImGui.Text("Этот режим предназначен для тестов и фана. Он может необратимо изменить инвентарь или ваши очки прокачки!")
+            if self.pendingModeSwitch ~= -1 then ImGui.OpenPopup(Locales.Get("POP_MODE_TITLE")) end
+            if ImGui.BeginPopupModal(Locales.Get("POP_MODE_TITLE"), true, ImGuiWindowFlags.AlwaysAutoResize) then
+                local modeName = self.pendingModeSwitch == 1 and Locales.Get("MODE_SANDBOX") or Locales.Get("MODE_RENTAL")
+                ImGui.Text(Locales.Get("POP_MODE_DESC1", modeName))
+                ImGui.Text(Locales.Get("POP_MODE_DESC2"))
                 ImGui.Separator()
-                if ImGui.Button("Да, я понимаю риски", 150, 0) then self.itemLoadMode = self.pendingModeSwitch; self.pendingModeSwitch = -1; ImGui.CloseCurrentPopup() end
+                if ImGui.Button(Locales.Get("POP_MODE_BTN_YES"), 150, 0) then self.itemLoadMode = self.pendingModeSwitch; self.pendingModeSwitch = -1; ImGui.CloseCurrentPopup() end
                 ImGui.SameLine()
-                if ImGui.Button("Отмена", 100, 0) then self.pendingModeSwitch = -1; ImGui.CloseCurrentPopup() end
+                if ImGui.Button(Locales.Get("POP_MODE_BTN_NO"), 100, 0) then self.pendingModeSwitch = -1; ImGui.CloseCurrentPopup() end
                 ImGui.EndPopup()
             end
             
-            if self.pendingDeleteBuild ~= nil then ImGui.OpenPopup("Удаление билда") end
-            if ImGui.BeginPopupModal("Удаление билда", true, ImGuiWindowFlags.AlwaysAutoResize) then
-                ImGui.Text("Вы уверены, что хотите навсегда удалить билд:")
+            if self.pendingDeleteBuild ~= nil then ImGui.OpenPopup(Locales.Get("POP_DEL_TITLE")) end
+            if ImGui.BeginPopupModal(Locales.Get("POP_DEL_TITLE"), true, ImGuiWindowFlags.AlwaysAutoResize) then
+                ImGui.Text(Locales.Get("POP_DEL_DESC1"))
                 ImGui.Text("'" .. tostring(self.pendingDeleteBuild) .. "' ?")
                 ImGui.PushStyleColor(ImGuiCol.Text, 1.0, 0.3, 0.3, 1.0)
-                ImGui.Text("Это действие нельзя отменить!")
+                ImGui.Text(Locales.Get("POP_DEL_DESC2"))
                 ImGui.PopStyleColor()
                 ImGui.Separator()
-                if ImGui.Button("Да, удалить", 120, 0) then Storage.DeleteBuild(self.pendingDeleteBuild); self.statusMessage = "Билд удален."; self:RefreshBuilds(); self.pendingDeleteBuild = nil; ImGui.CloseCurrentPopup() end
+                if ImGui.Button(Locales.Get("POP_DEL_BTN_YES"), 120, 0) then Storage.DeleteBuild(self.pendingDeleteBuild); self.statusMessage = Locales.Get("STATUS_DEL_DONE"); self:RefreshBuilds(); self.pendingDeleteBuild = nil; ImGui.CloseCurrentPopup() end
                 ImGui.SameLine()
-                if ImGui.Button("Отмена", 100, 0) then self.pendingDeleteBuild = nil; ImGui.CloseCurrentPopup() end
+                if ImGui.Button(Locales.Get("POP_MODE_BTN_NO"), 100, 0) then self.pendingDeleteBuild = nil; ImGui.CloseCurrentPopup() end
                 ImGui.EndPopup()
             end
         end
@@ -753,7 +763,7 @@ function CyberBuildManager:Update(dt)
                 end
                 self.loadState.frames = 1
                 self.loadState.phase = 2
-                self.statusMessage = "Загрузка: Сброс характеристик..."
+                self.statusMessage = Locales.Get("STATUS_LOAD_PHASE2")
                 
             elseif phase == 2 then
                 -- ФАЗА 2: Сброс характеристик (работает, так как перков больше нет) и прокачка их
@@ -772,7 +782,7 @@ function CyberBuildManager:Update(dt)
                 end
                 self.loadState.frames = 10
                 self.loadState.phase = 3
-                self.statusMessage = "Загрузка: Покупка перков..."
+                self.statusMessage = Locales.Get("STATUS_LOAD_PHASE3")
                 
             elseif phase == 3 then
                 -- ФАЗА 3: Покупка нужных перков из билда
@@ -781,7 +791,7 @@ function CyberBuildManager:Update(dt)
                 end
                 self.loadState.frames = 5
                 self.loadState.phase = 4
-                self.statusMessage = "Загрузка: Применение снаряжения..."
+                self.statusMessage = Locales.Get("STATUS_LOAD_PHASE4")
                 
             elseif phase == 4 then
                 -- ФАЗА 4: Возвращаем оставшиеся очки и надеваем снаряжение

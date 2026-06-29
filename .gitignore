@@ -1,0 +1,26 @@
+﻿# Logs
+*.log
+debug_dump.txt
+cbm_debug.txt
+
+# Database
+db.sqlite3
+
+# User build saves (personal data)
+builds/*.json
+!builds/.gitkeep
+
+# Backup folders
+CyberBuildManager_SmartEquip_Backup/
+
+# IDE / Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+Thumbs.db
+.DS_Store
+desktop.ini

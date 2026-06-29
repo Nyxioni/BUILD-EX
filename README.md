@@ -23,9 +23,9 @@
 
 <div align="center">
 
-![Main Interface — build list, live preview, granular load options](https://raw.githubusercontent.com/Nyxioni/BUILD-EX/master/screenshots/main_ui.png)
-
-![Cheat Panel — attribute/perk points, eddies, level, street cred](https://raw.githubusercontent.com/Nyxioni/BUILD-EX/master/screenshots/cheats.png)
+<img src="screenshots/main_ui.png" alt="Main Interface — build list, live preview, granular load options">
+<br><br>
+<img src="screenshots/cheats.png" alt="Cheat Panel — attribute/perk points, eddies, level, street cred">
 
 </div>
 

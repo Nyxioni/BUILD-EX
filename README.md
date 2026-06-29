@@ -106,8 +106,8 @@ Built-in resource management with fine-grained control:
 <summary><b>Saving a build</b></summary>
 
 1. Open the CET overlay
-2. Enter a name in the **"Имя билда"** (Build name) field
-3. Click **"Сохранить текущий билд"** (Save current build)
+2. Enter a name in the **Build name** field
+3. Click **Save current build**
 4. A full snapshot of the character state is written to `builds/<name>.json`
 
 </details>
@@ -119,7 +119,7 @@ Built-in resource management with fine-grained control:
 2. Review the preview panel (attributes, perks, equipment, vehicles)
 3. Adjust load options if needed (toggle attributes, perks, equipment, etc.)
 4. Select a loading mode (Legit / Sandbox / Fitting Room)
-5. Click **"ЗАГРУЗИТЬ БИЛД"** (Load build)
+5. Click **Load build**
 6. A progress bar shows the current phase
 
 </details>
@@ -127,7 +127,7 @@ Built-in resource management with fine-grained control:
 <details>
 <summary><b>Using History & AutoSaves</b></summary>
 
-- The **"История" (History)** tab stores automatic backups and manual quick-saves
+- The **History** tab stores automatic backups and manual quick-saves
 - Before each build load, the current state is saved as `_AutoSave_1` (previous auto-saves shift to `_2` and `_3`)
 - Quick-save manually via the history tab with an optional note
 
@@ -136,7 +136,7 @@ Built-in resource management with fine-grained control:
 <details>
 <summary><b>Fitting Room workflow</b></summary>
 
-1. Switch to **Примерочная** (Fitting Room) mode
+1. Switch to **Fitting Room** mode
 2. Load any build — missing items are spawned temporarily
 3. Test the build in-game
 4. Load another build or switch back — all rental items are automatically destroyed
@@ -240,7 +240,7 @@ Builds-EX operates through CET's Lua API and does not modify game archives. It i
 <details>
 <summary><b>Can the UI language be changed?</b></summary>
 
-The current UI is in Russian. Localization support is not yet implemented but contributions are welcome.
+Full localization support (English/Russian) is being implemented. Contributions are welcome!
 
 </details>
 

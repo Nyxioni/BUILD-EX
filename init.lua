@@ -263,7 +263,7 @@ function CyberBuildManager:FormatBuildDetails(data)
 end
 
 function CyberBuildManager:Init()
-    print("[CyberBuildManager] Мод успешно загружен (v2.5).")
+    print("[CyberBuildManager] Мод успешно загружен (v1.0).")
     self:RefreshBuilds()
 end
 
@@ -370,7 +370,7 @@ function CyberBuildManager:Draw()
         self:ApplyTheme()
         
         ImGui.SetNextWindowSize(900, 750, ImGuiCond.FirstUseEver)
-        if ImGui.Begin("CyberBuildManager v2.5 (Neon Edition)", ImGuiWindowFlags.NoCollapse) then
+        if ImGui.Begin("CyberBuildManager v1.0 (Neon Edition)", ImGuiWindowFlags.NoCollapse) then
             
             -- HEADER: STATUS & PROGRESS
             ImGui.BeginChild("HeaderStatus", 0, 40, true)

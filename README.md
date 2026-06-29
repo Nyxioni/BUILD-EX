@@ -21,13 +21,9 @@
 
 ## 📸 Screenshots
 
-<div align="center">
+![Main Interface — build list, live preview, granular load options](screenshots/main_ui.png)
 
-<img src="screenshots/main_ui.png" alt="Main Interface — build list, live preview, granular load options">
-<br><br>
-<img src="screenshots/cheats.png" alt="Cheat Panel — attribute/perk points, eddies, level, street cred">
-
-</div>
+![Cheat Panel — attribute/perk points, eddies, level, street cred](screenshots/cheats.png)
 
 ---
 
